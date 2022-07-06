@@ -68,10 +68,8 @@ def write_single_deteriorate_xml(object_tag,out_xml_path):
     for xml_object in root.findall(find_object):
         logging.debug(f"xml_object: {xml_object}")
         xml_annotation.append(xml_object)
-    #ET.dump(xml_annotation)
     tree._setroot(xml_annotation)
     tree.write(out_xml_path, encoding="UTF-8")
-    #ET.tostring(xml_annotation,encoding="UTF-8",method='xml')
     logging.debug(f"write_single_deteriorate_xml({object_tag})") # log down debug message for log file
  
 # 遍歷 folder,讀取 xml file
