@@ -70,18 +70,7 @@ det_list = ["crack",
             "corrosion",
             "water_gain",
             "rusty_water"]
-# 選擇想篩選的資料夾(內含 .jpg .png .xcf)
-"""
-response = input("是否輸入資料夾名稱, Y:自行輸入資料夾, N:搜尋.py檔案所在資料夾: ").upper()
-if response == "Y":
-    folder_path = input("請輸入資料夾名稱: ")
-    print(folder_path)
-elif response == "N":
-    folder_path = os.path.abspath('.') # .py 檔放在要篩選的資料夾內時使用
-else:
-    print("Thanks")
-    sys.exit()
-"""
+
 # 用在 python xml_parse_count.py "指定資料夾"
 
 fn = sys.argv[1]
@@ -92,15 +81,14 @@ if os.path.exists(fn):
 folder_path = fn
 print(f"folder_path: {folder_path}")
 
-#csv_path = os.path.join(folder_path, "csvfile.csv")
+
 folder_name = os.path.basename(folder_path)
 print(f"folder_name: {folder_name}")
-csv_path = os.path.join(".",folder_name+"_csvfile.csv")
-csv_total_path = os.path.join(".","_csvtotal.csv")
-"""讀取 XML 檔案"""
+csv_path = os.path.join(".",folder_name+"_csvfile.csv") # 輸出的 csvfile.csv 檔路徑,用來匯入 excel 加總資料夾內單張圖片的劣化類別框選數量
+csv_total_path = os.path.join(".","_csvtotal.csv") # 輸出的 csvtotal.csv 路徑,用來匯入 excel 加總多次執行不同資料夾的 xml_parse_count_csv.py 的數量
 
+"""讀取 XML 檔案"""
 count = 0 # 用於計算總xml數(若每張都有輸出xml即是總張數)
-#count_det = {} # 用於計算圖片個劣化類別總數
 count_det = collections.defaultdict(int) # 用於計算圖片個劣化類別總數
 count_2000 = 0 # 用於計算2000張內不包含裂縫和無劣化的張數
 
@@ -119,27 +107,18 @@ for filename in os.listdir(folder_path):
     tree = ET.parse(file_path)
     root = tree.getroot()
     
-    # 用 Pythoninc 的 collections.defaultdict取代,計算單張圖片劣化類別的個數(一個框選算一個)
+    # 蒐集 <object> 底下的 <name> tag（也就是這張圖的所有劣化類別名稱),存到字典方便後續操作
+    """用 collections.defaultdict 建立預設值為 0 的字典,
+    將讀到的<name> 放到字典的 key,<name> 的數量放到字典的 value,
+    用來計算單張圖片劣化類別的節點數(也就是一張圖有多少個特定劣化框選數量)"""
     deteriorate = root.findall("./object/name")
     det = collections.defaultdict(int)
     for name in deteriorate:
         det[name.text] += 1
     print(f"det: {det}")
     print(f"det.keys: {det.keys()},set(det):{set(det)}, filename: {filename}")
-
     
-    # use dict  as header
-    filename_dict ={"filename":filename}
-    csv_header_dict= {**filename_dict,**det} # 把filename 和 劣化 組一起當作第一標題列（csv要匯入excel做處理)
-    """
-    print(f"csv_header: {csv_header_dict}")
-    if not os.path.exists(csv_path):
-        #create_csv(csv_path,csv_header_dict.keys())
-        create_csv(csv_path,csv_header_dict)
-    #write_dict_to_csv(csv_path,csv_header_dict)
-    write_pd_to_csv(csv_path,csv_header_dict)
-    """
-    # use list as header
+    # 組合出標題列
     filename_list = ["filename"]
     # 把 檔名 和所有劣化類別組起來,當作csv檔匯入excel後的標題列
     for i in (det_list):
@@ -147,8 +126,14 @@ for filename in os.listdir(folder_path):
     csv_header_list= filename_list
     print(f"csv_header_list: {csv_header_list}")
 
+    # 組合對應標題列的字典,方便後面可以用csv.DictWriter()根據字典的 key 和標題列的相同項目寫入對應的值
+    filename_dict ={"filename":filename}
+    csv_header_dict= {**filename_dict,**det} # 把filename 和 劣化 組一起當作第一標題列（csv要匯入excel做處理)
+
+    # 檢查是否已經存在 csv 檔
     if not os.path.exists(csv_path):
         create_csv(csv_path,csv_header_list)
+    # 把前面xml內計算好的劣化類別字典資料寫入 csv
     write_dict_to_csv(csv_path,csv_header_dict,csv_header_list)
     #write_pd_to_csv(csv_path,csv_header_dict) ＃ 試著用 pandas 處理
     
@@ -178,22 +163,24 @@ for filename in os.listdir(folder_path):
     if flag > 0:
         count_2000 += 1
 
-    
-    
-# use dict  as header
-foldername_dict ={"folder_path":folder_path}
-#csv_total_header_dict= {**foldername_dict,**det}
 
-# use list as header
+# 組合出標題列
 foldername_list = ["folder_path"]
+# 把 檔名 和所有劣化類別組起來,當作csv檔匯入excel後的標題列
 for i in (det_list):
     foldername_list.append(i)
 csv_total_header_list= foldername_list
+print(f"csv_total_header_list: {csv_total_header_list}")
 
+# 組合對應標題列的字典,方便後面可以用csv.DictWriter()根據字典的 key 和標題列的相同項目寫入對應的值
+foldername_dict ={"folder_path":folder_path}
 count_det_data={**foldername_dict,**count_det}
 print(f"count_det_data: {count_det_data}")  
+
+# 檢查是否已經存在 csv 檔
 if not os.path.exists(csv_total_path):
     create_csv(csv_total_path,csv_total_header_list)
+# 把前面xml內計算好的劣化類別字典資料寫入 csv
 write_dict_to_csv(csv_total_path,count_det_data,csv_total_header_list)
 #write_pd_to_csv(csv_path,csv_header_dict)
 
