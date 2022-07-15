@@ -33,32 +33,15 @@ def write_csv(file_path,data_row):
         csv_write.writerow(data_row)
         file.close()
 
+
+
 def write_dict_to_csv(csv_path,data_dict,header_row):   
     logging.debug(f"write_dict_to_csv({csv_path},{data_dict})")
     with open(csv_path,'a+',encoding='utf8',newline='') as csv_output:
-        #for i, d in enumerate(count_det):
-        #   print(i,d)
         writer = csv.DictWriter(csv_output, fieldnames=header_row, extrasaction='ignore')
         print(f"data_dict{data_dict}")
         writer.writerow(data_dict)
         csv_output.close()
-"""
-# 使用pandas
-import pandas as pd 
-def write_pd_to_csv(csv_path,data_dict):   
-    logging.debug(f"write_dict_to_csv({csv_path},{data_dict})")
-    with open(csv_path,'a+',encoding='utf8',newline='') as csv_output:
-        #for i, d in enumerate(count_det):
-        #   print(i,d)
-        #writer = csv.DictWriter(csv_output, fieldnames=data_dict.keys(),delimiter=",")
-        writer = csv.DictWriter(csv_output, fieldnames=data_dict,delimiter=",")
-        print(f"data_dict{data_dict}")
-        #writer.writeheader()
-        #for key in data_dict:
-        #    print(f" key in data_dict: {key,data_dict[key]}")
-        writer.writerow(data_dict)
-        csv_output.close()
-"""
 
 # 劣化標註列表
 det_list = ["crack", 
@@ -71,27 +54,24 @@ det_list = ["crack",
             "water_gain",
             "rusty_water"]
 
-# 用在 python xml_parse_count.py "指定資料夾"
-
+# folder_path,用在指定要處理的資料夾 ｀python xml_parse_count.py "指定資料夾"｀
 fn = sys.argv[1]
-print(fn)
-print(os.path.isdir(fn))
 if os.path.exists(fn):
     print(os.path.basename(fn))
 folder_path = fn
 print(f"folder_path: {folder_path}")
 
-
+# folder_name, 用來組合檔案路徑
 folder_name = os.path.basename(folder_path)
 print(f"folder_name: {folder_name}")
 csv_path = os.path.join(".",folder_name+"_csvfile.csv") # 輸出的 csvfile.csv 檔路徑,用來匯入 excel 加總資料夾內單張圖片的劣化類別框選數量
 csv_total_path = os.path.join(".","_csvtotal.csv") # 輸出的 csvtotal.csv 路徑,用來匯入 excel 加總多次執行不同資料夾的 xml_parse_count_csv.py 的數量
 
-"""讀取 XML 檔案"""
+
 count = 0 # 用於計算總xml數(若每張都有輸出xml即是總張數)
 count_det = collections.defaultdict(int) # 用於計算圖片個劣化類別總數
-count_2000 = 0 # 用於計算2000張內不包含裂縫和無劣化的張數
 
+# 遍歷 folder,讀取 xml file
 for filename in os.listdir(folder_path):
 # 讀取檔案,只讀取 xml 檔
     filename = filename.lower() # 副檔名統一小寫
@@ -132,36 +112,13 @@ for filename in os.listdir(folder_path):
 
     # 檢查是否已經存在 csv 檔
     if not os.path.exists(csv_path):
-        create_csv(csv_path,csv_header_list)
+        create_csv(csv_path, csv_header_list)
     # 把前面xml內計算好的劣化類別字典資料寫入 csv
-    write_dict_to_csv(csv_path,csv_header_dict,csv_header_list)
-    #write_pd_to_csv(csv_path,csv_header_dict) ＃ 試著用 pandas 處理
-    
-    """
-    # 用不寫死的方式,試著組出 標題列 header 的內容
-    det = {}
-    for object_tag in root.iter('object'):
-        name = object_tag.find('name').text
-        if name not in det.keys():
-            det[name] = 1
-        else:
-            det[name] += 1
-    print(det) 
-    print(det.keys())
-    """
-
+    write_dict_to_csv(csv_path, csv_header_dict, csv_header_list)
+   
     # 計算各圖片劣化類別總數(一張圖有一種劣化算一個)
     for k in det.keys():
         count_det[k] += 1
-    
-    # 額外處理,計算2000張內部不包含裂縫和無劣化的張數
-    flag = 0
-    for i in det_list:
-        if  re.match("crack",i):
-            continue
-        flag |= det.get(i,0) 
-    if flag > 0:
-        count_2000 += 1
 
 
 # 組合出標題列
@@ -182,9 +139,8 @@ if not os.path.exists(csv_total_path):
     create_csv(csv_total_path,csv_total_header_list)
 # 把前面xml內計算好的劣化類別字典資料寫入 csv
 write_dict_to_csv(csv_total_path,count_det_data,csv_total_header_list)
-#write_pd_to_csv(csv_path,csv_header_dict)
 
-print(f"Total xml : {count}, {count_det }, {set(count_det)}")
-print(f"count_2000: {count_2000}")
+print(f"\nTotal xml : {count}, {count_det }, {set(count_det)}")
+
 
 

@@ -18,10 +18,11 @@ folder_path = fn
 # 取得所有檔案與子目錄名稱
 files = os.listdir(folder_path)
 
+"""更改檔名格式"""
 # 改檔名串接數字
-stream_num = 4075
+stream_num = 0
 # 改檔名串接字串
-stream_word= "_CTCI"
+stream_word= "_YRB_CTCI"
 # 更名後新檔案存放位置
 new_foldername ="多重劣化" 
 """
@@ -67,6 +68,9 @@ for root, dirs, files in os.walk(folder_path):
         if not filename.endswith('.xml'):
             continue
         print(_file)
+
+        """ 更名前紀錄檔名對照表 """
+
         # 更名 .xml 檔
         print(f"fullpath: {fullpath}\nnewpath: {newpath}")
         os.rename(fullpath, newpath)

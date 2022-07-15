@@ -1,3 +1,7 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+# 上面兩行是for python2(一定要原封不動放最上面) ,否則遇到中文會跳錯 SyntaxError: Non-ASCII character '\xe4' in file xml_parse_count.py on line 6, but no encoding declared; see http://python.org/dev/peps/pep-0263/ for details
+
 """
 需求: 計算劣化數量
 
@@ -73,7 +77,7 @@ for filename in os.listdir(folder_path):
     det = collections.defaultdict(int) 
     for name in deteriorate:
         det[name.text] += 1
-    print(f"det: {det}")
+    print(f"filename: {filename} \ndet: {det}")
 
 # 排除無劣化的 xml 檔,依據劣化輸出 xml
     if not det:
