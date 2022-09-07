@@ -3,20 +3,23 @@
 # 上面兩行是for python2(一定要原封不動放最上面) ,否則遇到中文會跳錯 SyntaxError: Non-ASCII character '\xe4' in file xml_parse_count.py on line 6, but no encoding declared; see http://python.org/dev/peps/pep-0263/ for details
 
 """
-需求: 計算劣化數量
-
+複製 .jpg圖片 和輸出 單一劣化 .xml檔 到新建的單一劣化資料夾
+前置作業:
+- 比對同一張圖片的多重劣化和個單一劣化的 xml 內容結構差異,確認需更改的地方
+程式:
 - 選取資料夾路徑(GUI或手動填)-手動填
 - 遍歷選取資料夾讀取 .xml 檔
-- 列出該張圖片的所有劣化分類
-- 計算各項劣化圖片總數量
+- 將劣化類別複製,並寫入到分別的劣化類別 .xml 檔
+- 複製.jpg圖片到劣化類別資料夾
+- 模組化
 
 使用
-- 安裝套件 : 不需安裝,使用內建lib
-- 執行 python檔:
-    `> python3 xml_parse_count_csv.py "要處理的資料夾路徑"`
-- 印出總數及各劣化數量如下範例:
-    `Total xml : 6, defaultdict(<class 'int'>, {'crack_00': 3, 'rusty_water': 1, 'spalling': 4, 'crack_AC': 1, 'crack': 1, 'corrosion': 1})`
-- 輸出 .csv 檔包含劣化數量資訊方便匯入到 excel 處理 
+
+安裝套件 : 不需安裝,使用內建lib
+將這個 .py 檔放到想篩選圖片的資料夾內
+執行 python檔:
+> python3 xml_parse_split_deteriorate.py "要處理的路徑"
+輸出單一劣化資料到對應的資料夾,複製.jpg 圖片檔並抽取單一劣化 .xml 檔進資料夾
 """
 import xml.etree.ElementTree  as ET
 import logging

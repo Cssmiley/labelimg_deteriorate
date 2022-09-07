@@ -95,6 +95,10 @@ for filename in os.listdir(folder_path):
     det = collections.defaultdict(int)
     for name in deteriorate:
         det[name.text] += 1
+    # 無劣化以 "other" 代表
+    if not det:
+        print(f"not det: {filename}")
+        det["other"] += 1 
     print(f"det: {det}")
     print(f"det.keys: {det.keys()},set(det):{set(det)}, filename: {filename}")
     

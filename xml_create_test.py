@@ -41,3 +41,4 @@ f = file("book.xml","w")
 doc.writexml(f)
 f.close()
 
+import 
