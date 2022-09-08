@@ -14,16 +14,28 @@ xml_node_move.py
 - 安裝套件 : 不需安裝,使用內建lib
 - 執行 python:
 ```
+    @ 置換劣化類別:
     下面指令會使用 --new_folder 資料夾內的指定劣化類別節點 --deteriorate , 替代掉 --old_folder 內的指定劣化類別節點
     > python3 xml_node_move.py --deteriorate crack efflorescence --old_folder "要被置換的舊節點資料夾路徑" --new_folder "新節點資料夾路徑"
 
     可以把上面的 --deteriorate --old_folder --newfolder 換成簡寫的 -d -o -n ,如下所示（空格是為了和上面清楚對照可以不需要這麼多空格) 
     > python3 xml_node_move.py -d            crack efflorescence -o           "要被置換的舊節點資料夾路徑" -n           "新節點資料夾路徑"
+
+    @ 保留劣化類別:
+    下面指令會使用 --new_folder 資料夾內的指定保留劣化類別以外的所有節點 --keep_deteriorate , 替代掉 --old_folder 內的指定劣化類別節點
+    > python3 xml_node_move.py --keep_deteriorate crack efflorescence --old_folder "要被置換的舊節點資料夾路徑" --new_folder "新節點資料夾路徑"
+
+    可以把上面的 --keep_deteriorate --old_folder --newfolder 換成簡寫的 -k -o -n ,如下所示（空格是為了和上面清楚對照可以不需要這麼多空格) 
+    > python3 xml_node_move.py -k            crack efflorescence -o           "要被置換的舊節點資料夾路徑" -n           "新節點資料夾路徑"
 ```
 指令參數說明：
 ```
+    -d 置換劣化節點 和 -k 保留劣化節點 是互斥選項,無法同時執行
     -d, --deteriorate  
-        指定劣化類別,可指定一個到多個,例如. `-d crack` 或 `-d crack efflorescence`,這些劣化類別的節點會被置換掉
+        指定要置換的劣化類別,可指定一個到多個,例如. `-d crack` 或 `-d crack efflorescence`,這些劣化類別的節點會被置換掉
+    -k, --keep_deteriorate
+        指定保留的劣化類別,可指定一個到多個, 例如. `-k crack` 或 `-k crack efflorescence`,除了指定的劣化類別外都會置換成新的版本
+    
     -o, --old_folder
         要被置換掉的 .xml 檔案所在的資料夾路徑,例如. `D:\labelImg提交檔案`
     -n, --new_folder
@@ -44,11 +56,18 @@ logging.basicConfig(filename="xml_node_move-log_filename.txt",
 
 # 定義輸入參數
 parser = argparse.ArgumentParser()
-parser.add_argument("-d",
+# 使用 argparse 的 add_mutaually_exclusive_group() 處理 置換和保留 特定劣化類別 命令不可同時進行的衝突
+group = parser.add_mutually_exclusive_group()
+group.add_argument("-d",
                     "--deteriorate",
                     nargs="+",
                     type=str,
-                    help="這是劣化類別")
+                    help="這是要置換的劣化類別")
+group.add_argument("-k",
+                    "--keep_deteriorate",
+                    nargs="+",
+                    type=str,
+                    help="這是要保留的劣化類別")
 parser.add_argument("-o",
                     "--old_folder",
                     nargs=1,
@@ -60,25 +79,67 @@ parser.add_argument("-n",
                     help="這是第 3 個引數, 請輸入路徑")
 args = parser.parse_args()
 object_tag = args.deteriorate
+keep_object_tag = args.keep_deteriorate
 old_folder_path = args.old_folder[0]  
 new_folder_path = args.new_folder[0]
-print(f"第 1 個引數：{args.deteriorate},type={type(args.deteriorate)}")
-print(f"第 2 個引數: {args.old_folder}, type={type(args.old_folder)}")
-print(f"第 3 個引數：{args.new_folder}, type={type(args.new_folder)}")
+print(f"deteriorate 引數：{args.deteriorate},type={type(args.deteriorate)}")
+print(f"keep_deteriorate 引數：{args.keep_deteriorate},type={type(args.keep_deteriorate)}")
+print(f"old_folder 引數: {args.old_folder}, type={type(args.old_folder)}")
+print(f"new_folder 引數：{args.new_folder}, type={type(args.new_folder)}")
 
-print(f"deteriorate: {object_tag},\nold_folder_path: {old_folder_path},\nnew_folder_path: {new_folder_path}")
+# 顯示 置換或保留 劣化類別資訊,若未輸入相關命令則終止程式
+if args.deteriorate:
+    print(f"deteriorate: {object_tag},\nold_folder_path: {old_folder_path},\nnew_folder_path: {new_folder_path}")
+elif args.keep_deteriorate:
+    print(f"keep_deteriorate: {keep_object_tag},\nold_folder_path: {old_folder_path},\nnew_folder_path: {new_folder_path}")
+else:
+    print("請輸入 -d 引數 或 -k 引數")
+    sys.exit()
+
+# 建立保留劣化類別的 .xml
+def keep_deteriorate_xml(out_xml_path, _keep_object_tag):
+    print(f"keep_object_tag: {_keep_object_tag}, type(keep_object_tag): {type(_keep_object_tag)}\nout_xml_path: {out_xml_path}")
+# 組合要寫入 xml 的節點
+    # 建立 labelImg 輸出的 xml 檔的第一個節點 <annotation>
+    xml_annotation = ET.Element("annotation")
+    # 接著貼上上半段所有不是<object> 的節點
+    for child in root:
+        if child.tag == "object":
+            continue # 跳過 <object> 節點
+        xml_annotation.append(child)
+    # 貼上指定保留劣化類別節點和新的其他劣化類別節點
+    for item in _keep_object_tag:
+        find_object =f"object[name='{item}']"
+        print(f"find_object:{item}")
+        # 從舊資料夾的xml檔,貼上指定保留劣化節點
+        for xml_object in root.findall(find_object):
+            xml_annotation.append(xml_object)
+            print(f"append({xml_object.find('name').text})")
+        # 從新資料夾的 xml 檔,貼上指定保留以外的其他劣化節點
+        for xml_object in root_new.iter('object'):
+            print(f"root_new.iter('object'): {xml_object}")
+            print(f"xml_object.tag: {xml_object.tag}") # object
+            if xml_object.find('name').text in _keep_object_tag:
+                print(f"_keep_object_tag: {_keep_object_tag}")
+                continue
+            xml_annotation.append(xml_object)
+            print(f"append({xml_object.find('name').text})")
+    # 將組合好的節點寫入 .xml 檔
+    tree._setroot(xml_annotation) # 將上面組合好的最上層節點 <annotation> 設成根節點
+    tree.write(out_xml_path, encoding="UTF-8")
+    #logging.debug(f"keep_deteriorate_xml({out_xml_path}, {_keep_object_tag})") # log down debug message for log file        
 
 # 建立置換劣化類別的 .xml
 def replace_deteriorate_xml(out_xml_path, _object_tag):
-    print(f"object_tag: {_object_tag}, type(object_tag):{type(_object_tag)}\nout_xml_path: {out_xml_path}")
+    print(f"object_tag: {_object_tag}, type(object_tag): {type(_object_tag)}\nout_xml_path: {out_xml_path}")
 # 組合要寫入 xml 的節點    
-    # 建立labelImg輸出的 xml 檔的第一個節點 <annotation>
+    # 建立 labelImg 輸出的 xml 檔的第一個節點 <annotation>
     xml_annotation = ET.Element("annotation")
-    # 接著貼上上半段所有不是 <object> 的節點
+    # 接著貼上所有的節點
     for child in root:
         xml_annotation.append(child)
+    # 移除指定劣化節點,並貼上更新的劣化節點
     for item in _object_tag:
-# 貼上除了指定劣化節點的節點
         find_object = f"object[name='{item}']"
         print(f"find_object:{item}")
         # 移除 特定劣化節點
@@ -92,7 +153,7 @@ def replace_deteriorate_xml(out_xml_path, _object_tag):
 # 將組合好的節點寫入 .xml 檔
     tree._setroot(xml_annotation) # 將上面組合好的最上層節點 <annotation>設成根節點
     tree.write(out_xml_path, encoding="UTF-8")
-    #logging.debug(f"replace_deteriorate_xml({_object_tag},{out_xml_path})") # log down debug message for log file
+    #logging.debug(f"replace_deteriorate_xml({out_xml_path},{_object_tag})") # log down debug message for log file
  
 """讀取 xml 檔案"""
 folder_path = old_folder_path
@@ -142,5 +203,12 @@ for filename in os.listdir(folder_path):
     jpg_copy_path = os.path.join(deteriorate_folder_path,filename.replace(".xml",".jpg"))
     if not os.path.exists(jpg_copy_path):
         shutil.copy(jpg_path, jpg_copy_path)
-    # 置換劣化類別節點  
-    replace_deteriorate_xml(output_xml_path, object_tag)
+
+    # 執行置換或保留劣化節點
+    if args.deteriorate:
+        # 置換劣化類別節點  
+        replace_deteriorate_xml(output_xml_path, object_tag)
+    elif args.keep_deteriorate:
+        # 保留劣化節點
+        keep_deteriorate_xml(output_xml_path, keep_object_tag)
+    
