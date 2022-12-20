@@ -64,8 +64,10 @@ print(f"folder_path: {folder_path}")
 # folder_name, 用來組合檔案路徑
 folder_name = os.path.basename(folder_path)
 print(f"folder_name: {folder_name}")
-csv_path = os.path.join(".",folder_name+"_csvfile.csv") # 輸出的 csvfile.csv 檔路徑,用來匯入 excel 加總資料夾內單張圖片的劣化類別框選數量
-csv_total_path = os.path.join(".","_csvtotal.csv") # 輸出的 csvtotal.csv 路徑,用來匯入 excel 加總多次執行不同資料夾的 xml_parse_count_csv.py 的數量
+csv_path = os.path.join(folder_path + "_xml_parse_count.csv") # 輸出的 .csv 檔路徑,用來匯入 excel 加總資料夾內單張圖片的劣化類別框選數量
+# csv_path = os.path.join(".",folder_name+"_csvfile.csv") # 輸出的 csvfile.csv 檔路徑,用來匯入 excel 加總資料夾內單張圖片的劣化類別框選數量
+csv_total_path = os.path.join(folder_path + "_xml_parse_count_total.csv") # 輸出的 .csv 路徑,用來匯入 excel 加總多次執行不同資料夾的 xml_parse_count_csv.py 的數量
+#csv_total_path = os.path.join(".","_csvtotal.csv") # 輸出的 csvtotal.csv 路徑,用來匯入 excel 加總多次執行不同資料夾的 xml_parse_count_csv.py 的數量
 
 
 count = 0 # 用於計算總xml數(若每張都有輸出xml即是總張數)
@@ -105,7 +107,7 @@ for filename in os.listdir(folder_path):
     # 組合出標題列
     filename_list = ["filename"]
     # 把 檔名 和所有劣化類別組起來,當作csv檔匯入excel後的標題列
-    for i in (det_list):
+    for i in (det.keys()):
         filename_list.append(i)
     csv_header_list= filename_list
     print(f"csv_header_list: {csv_header_list}")
@@ -128,7 +130,7 @@ for filename in os.listdir(folder_path):
 # 組合出標題列
 foldername_list = ["folder_path"]
 # 把 檔名 和所有劣化類別組起來,當作csv檔匯入excel後的標題列
-for i in (det_list):
+for i in (det.keys()):
     foldername_list.append(i)
 csv_total_header_list= foldername_list
 print(f"csv_total_header_list: {csv_total_header_list}")

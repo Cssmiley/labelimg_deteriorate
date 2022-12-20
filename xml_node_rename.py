@@ -154,7 +154,7 @@ for item in det_new:
             print("請輸入 continue 或 n")
             sys.exit()
 
-# 處理 xml檔
+""" 處理 xml檔 """
 for filename in os.listdir(folder_path):
     # 跳過 .xml
     if not filename.endswith('.xml'):
@@ -184,4 +184,4 @@ for filename in os.listdir(folder_path):
     # 計算各圖片劣化類別總數
     for k in det.keys():
         count_det[k] += 1
-print(count_det)
+print(count_det) # 印出來的是包含舊的劣化和新的劣化
