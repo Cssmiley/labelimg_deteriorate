@@ -148,11 +148,7 @@ if __name__=="__main__":
     # 一般資料夾計算數量
     if (not (args.recursive)) and(args.path): # 因為args.path 有設定default值,只有指定-r時args.path會有預設值"."產生,條件需加上 not(args.recursive)
         count_results = count_folder(folder_path)
-        """
-        for file_name in os.listdir(folder_path):
-            file_path = os.path.join(folder_path, file_name)
-            count_results = count_file_deteriorate(file_path)
-        """
+        
     #遞迴計算
     if (args.recursive):
         count_results = count_recursive_folder(recursive_folder_path)
