@@ -11,67 +11,15 @@ import sys
 import re
 import argparse
 from pathlib import Path
-# 劣化標註列表
-"""
-# deprecated
-det_list = ["crack", 
-            "spalling",
-            "efflorescence",
-            "corrosion",
-            "water_gain",
-            "rusty_water"]
-"""
-# 定義輸入參數
-parser = argparse.ArgumentParser()
-group = parser.add_mutually_exclusive_group() # 互斥的選項
-group.add_argument("-p",
-                    "--path",
-                    nargs=1, 
-                    type=str,
-                    default=".", # 不指定 -p 參數時,預設args.path資料夾為"."
-                    help="這是路徑--path")
-group.add_argument("-r",
-                    "--recursive",
-                    nargs = 1,
-                    type = str,
-                    help = "這是遞迴拋指定資料夾路徑,未指定則預設此 .py 檔鎖在資料夾")
-args = parser.parse_args()
-if (args.path):
-    folder_path =  args.path[0]
-    print(f"args.path folder_path: {folder_path}")
-    
-if (args.recursive):
-    recursive_folder_path = args.recursive[0]
-    print(f"args.recursive folder_path: {recursive_folder_path}")
-    print(f"遞迴資料夾: {args.recursive}")
-
-print(f"第 1 個引數：{args.path},type={type(args.path)}")
-print(f"第 2 個引數: {args.recursive}, type={type(args.recursive)}")
-
-# 用在 python xml_parse_count.py "指定資料夾"
-# 若存在 sys.argv[1] 就用來當路徑,否則就用.py 檔所在資料夾當路徑
-"""
-# deprecated 不要和Argparse混用
-try :
-    fn = sys.argv[1]
-except:
-    fn = os.path.abspath('.')
-    
-print(fn)
-print(os.path.isdir(fn))
-if os.path.exists(fn):
-    print(os.path.basename(fn))
-folder_path = fn
-"""
-
-"""讀取 XML 檔案"""
-
 
 count_xml = 0 # 用於計算總xml數(若每張都有輸出xml即是總張數)
 count_det = collections.defaultdict(int) # 用於計算圖片個劣化類別總數
 #deprecated
 #count_2000 = 0 # 用於計算2000張內不包含裂縫和無劣化的張數
 
+#recursive_count={}
+# 計算 xml 數,劣化數
+count_results = {}
 
 def count_file_deteriorate(_file_path):
     # 用於計算總xml數(若每張都有輸出xml即是總張數)
@@ -107,11 +55,19 @@ def count_file_deteriorate(_file_path):
     
     return count_xml_det
 
-recursive_count={}
 
-#遞迴計算
+# 一般資料夾計算
+def count_folder(_folder):
+    
+    for _file in os.listdir(_folder):
+        _file_path = os.path.join(_folder, _file) 
+        folder_count = count_file_deteriorate(_file_path)
+    print(f"folder_count : {folder_count}")
+    return folder_count
+
+# 遞迴資料夾計算
 def count_recursive_folder(_folder):
-    global recursive_count
+    #global recursive_count
     for _subitem in sorted(Path(_folder).iterdir()):
         
         if _subitem.is_dir():
@@ -133,22 +89,76 @@ def count_recursive_folder(_folder):
         print(f"_subitem: {_subitem}")
     return recursive_count
 
+if __name__=="__main__":
+    # 劣化標註列表
+    """
+    # deprecated
+    det_list = ["crack", 
+                "spalling",
+                "efflorescence",
+                "corrosion",
+                "water_gain",
+                "rusty_water"]
+    """
+    # 定義輸入參數
+    parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group() # 互斥的選項
+    group.add_argument("-p",
+                        "--path",
+                        nargs=1, 
+                        type=str,
+                        default=".", # 不指定 -p 參數時,預設args.path資料夾為"."
+                        help="這是路徑--path")
+    group.add_argument("-r",
+                        "--recursive",
+                        nargs = 1,
+                        type = str,
+                        help = "這是遞迴拋指定資料夾路徑,未指定則預設此 .py 檔鎖在資料夾")
+    args = parser.parse_args()
+    if (args.path):
+        folder_path =  args.path[0]
+        print(f"args.path folder_path: {folder_path}")
+        
+    if (args.recursive):
+        recursive_folder_path = args.recursive[0]
+        print(f"args.recursive folder_path: {recursive_folder_path}")
+        print(f"遞迴資料夾: {args.recursive}")
 
-# 計算 xml 數,劣化數
-count_results = {}
+    print(f"第 1 個引數：{args.path},type={type(args.path)}")
+    print(f"第 2 個引數: {args.recursive}, type={type(args.recursive)}")
 
-# 一般資料夾計算數量
-if (not (args.recursive)) and(args.path): # 因為args.path 有設定default值,只有指定-r時args.path會有預設值"."產生,條件需加上 not(args.recursive)
-    for file_name in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, file_name)
-        count_results = count_file_deteriorate(file_path)
+    # 用在 python xml_parse_count.py "指定資料夾"
+    # 若存在 sys.argv[1] 就用來當路徑,否則就用.py 檔所在資料夾當路徑
+    """
+    # deprecated 不要和Argparse混用
+    try :
+        fn = sys.argv[1]
+    except:
+        fn = os.path.abspath('.')
+        
+    print(fn)
+    print(os.path.isdir(fn))
+    if os.path.exists(fn):
+        print(os.path.basename(fn))
+    folder_path = fn
+    """
 
-#遞迴計算
-if (args.recursive):
-    count_results = count_recursive_folder(recursive_folder_path)
-    
-print(count_results)
-print(f"Total xml : { count_results['count_xml'] }, { count_results['count_det'] }")
+    """讀取 XML 檔案"""
+
+    # 一般資料夾計算數量
+    if (not (args.recursive)) and(args.path): # 因為args.path 有設定default值,只有指定-r時args.path會有預設值"."產生,條件需加上 not(args.recursive)
+        count_results = count_folder(folder_path)
+        """
+        for file_name in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, file_name)
+            count_results = count_file_deteriorate(file_path)
+        """
+    #遞迴計算
+    if (args.recursive):
+        count_results = count_recursive_folder(recursive_folder_path)
+        
+    print(count_results)
+    print(f"Total xml : { count_results['count_xml'] }, { count_results['count_det'] }")
 
 """
 # 一般資料夾計算數量
