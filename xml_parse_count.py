@@ -17,7 +17,7 @@ count_det = collections.defaultdict(int) # 用於計算圖片個劣化類別總�
 #deprecated
 #count_2000 = 0 # 用於計算2000張內不包含裂縫和無劣化的張數
 
-#recursive_count={}
+recursive_count={}
 # 計算 xml 數,劣化數
 count_results = {}
 
@@ -67,7 +67,7 @@ def count_folder(_folder):
 
 # 遞迴資料夾計算
 def count_recursive_folder(_folder):
-    #global recursive_count
+    global recursive_count
     for _subitem in sorted(Path(_folder).iterdir()):
         
         if _subitem.is_dir():
@@ -89,8 +89,8 @@ def count_recursive_folder(_folder):
         print(f"_subitem: {_subitem}")
     return recursive_count
 
-if __name__=="__main__":
-    # 劣化標註列表
+def main():
+   # 劣化標註列表
     """
     # deprecated
     det_list = ["crack", 
@@ -156,6 +156,8 @@ if __name__=="__main__":
     print(count_results)
     print(f"Total xml : { count_results['count_xml'] }, { count_results['count_det'] }")
 
+if __name__=="__main__":
+    main()
 """
 # 一般資料夾計算數量
 for file_name in os.listdir(folder_path):
