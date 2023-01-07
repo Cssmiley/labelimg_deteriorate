@@ -11,6 +11,9 @@ import sys
 import re
 import argparse
 from pathlib import Path
+import logging
+# 儲存 debug 資訊
+logging.basicConfig(level=logging.DEBUG, format=' % (asctime)s - % (levelname)s - % (message)s')
 
 count_xml = 0 # 用於計算總xml數(若每張都有輸出xml即是總張數)
 count_det = collections.defaultdict(int) # 用於計算圖片個劣化類別總數
@@ -45,7 +48,7 @@ def count_file_deteriorate(_file_path):
             det["other"] += 1 
         print(det) # 單張的所有劣化及數量
         print(f"det.keys: {det.keys()}, file_path : {_file_path }")
-        
+        logging.debug(f"det.keys: {det.keys()}, file_path : {_file_path }")
         # 計算各圖片劣化類別總數
         for k in det.keys():
             count_det[k] += 1
@@ -108,12 +111,12 @@ def main():
                         nargs=1, 
                         type=str,
                         default=".", # 不指定 -p 參數時,預設args.path資料夾為"."
-                        help="這是路徑--path")
+                        help="這是路徑--path,未指定則預設此 .py 檔所在資料夾")
     group.add_argument("-r",
                         "--recursive",
                         nargs = 1,
                         type = str,
-                        help = "這是遞迴拋指定資料夾路徑,未指定則預設此 .py 檔鎖在資料夾")
+                        help = "這是遞迴拋指定資料夾路徑")
     args = parser.parse_args()
     if (args.path):
         folder_path =  args.path[0]

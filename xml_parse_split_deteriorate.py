@@ -26,26 +26,58 @@ import logging
 import os, sys
 import shutil
 import collections
+import argparse
+from pathlib import Path
+
 # debug message in log file
 logging.basicConfig(filename="log_filename.txt", 
                     level=logging.DEBUG,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
+# 定義輸入參數
+parser = argparse.ArgumentParser()
+group = parser.add_mutually_exclusive_group() # 互斥的選項
+group.add_argument("-p",
+                    "--path",
+                    nargs=1, 
+                    type=str,
+                    default=".", # 不指定 -p 參數時,預設args.path資料夾為"."
+                    help="這是路徑--path,未指定則預設此 .py 檔所在資料夾")
+group.add_argument("-r",
+                    "--recursive",
+                    nargs = 1,
+                    type = str,
+                    help = "這是遞迴拋指定資料夾路徑")
+args = parser.parse_args()
+if (args.path):
+    folder_path =  args.path[0]
+    print(f"args.path folder_path: {folder_path}")
+    
+if (args.recursive):
+    recursive_folder_path = args.recursive[0]
+    print(f"args.recursive folder_path: {recursive_folder_path}")
+    print(f"遞迴資料夾: {args.recursive}")
+
+print(f"第 1 個引數：{args.path},type={type(args.path)}")
+print(f"第 2 個引數: {args.recursive}, type={type(args.recursive)}")
+
+"""
 # folder_path,用在指定要處理的資料夾 ｀python xml_parse_count.py "指定資料夾"｀
 fn = sys.argv[1]
 if os.path.exists(fn):
     print(os.path.basename(fn))
 folder_path = fn
-
+"""
 
 # 輸出單一劣化的 .xml
-def write_single_deteriorate_xml(object_tag,out_xml_path):
+def write_single_deteriorate_xml(tree, root, object_tag, out_xml_path):
 # 組合要寫入 xml 的節點    
     # 建立labelImg輸出的 xml 檔的第一個節點 <annotation>
     xml_annotation = ET.Element("annotation")
-    
+    _tree = tree
+    _root = root
     # 接著貼上上半段所有不是 <object> 的節點
-    for child in root:
+    for child in _root:
         if child.tag == "object":
             continue # 跳過 <object> 節點
         xml_annotation.append(child)
@@ -55,54 +87,58 @@ def write_single_deteriorate_xml(object_tag,out_xml_path):
         logging.debug(f"xml_object: {xml_object}")
         xml_annotation.append(xml_object)
 # 將組合好的節點寫入 .xml 檔
-    tree._setroot(xml_annotation) # 將上面組合好的最上層節點 <annotation>設成根節點
-    tree.write(out_xml_path, encoding="UTF-8")
+    _tree._setroot(xml_annotation) # 將上面組合好的最上層節點 <annotation>設成根節點
+    _tree.write(out_xml_path, encoding="UTF-8")
     logging.debug(f"write_single_deteriorate_xml({object_tag})") # log down debug message for log file
  
-# 遍歷 folder,讀取 xml file
-for filename in os.listdir(folder_path):
+def split_from_folder(folder_path):
+    # 遍歷 folder,讀取 xml file
+    for filename in os.listdir(folder_path):
 
-    # 讀取檔案,只讀取 xml 檔
-    filename = filename.lower() # 副檔名統一小寫
-    if not filename.endswith('.xml'):
-        continue # 跳過 .xml 以外的檔
-    file_path = os.path.join(folder_path, filename)
-    # read .xml file
-    xml_path = file_path
-    tree = ET.parse(xml_path)
-    root = tree.getroot()
+        # 讀取檔案,只讀取 xml 檔
+        filename = filename.lower() # 副檔名統一小寫
+        if not filename.endswith('.xml'):
+            continue # 跳過 .xml 以外的檔
+        file_path = os.path.join(folder_path, filename)
+        # read .xml file
+        xml_path = file_path
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
 
-# 蒐集 <object> 底下的 <name> tag（也就是這張圖的所有劣化類別名稱),存到字典方便後續操作
-    """用 collections.defaultdict 建立預設值為 0 的字典,
-    將讀到的<name> 放到字典的 key,<name> 的數量放到字典的 value,
-    用來計算單張圖片劣化類別的節點數(也就是一張圖有多少個特定劣化框選數量)"""
-    deteriorate = root.findall("./object/name") # 取得所有類別名稱
-    det = collections.defaultdict(int) 
-    for name in deteriorate:
-        det[name.text] += 1
-    print(f"filename: {filename} \ndet: {det}")
+    # 蒐集 <object> 底下的 <name> tag（也就是這張圖的所有劣化類別名稱),存到字典方便後續操作
+        """用 collections.defaultdict 建立預設值為 0 的字典,
+        將讀到的<name> 放到字典的 key,<name> 的數量放到字典的 value,
+        用來計算單張圖片劣化類別的節點數(也就是一張圖有多少個特定劣化框選數量)"""
+        deteriorate = root.findall("./object/name") # 取得所有類別名稱
+        det = collections.defaultdict(int) 
+        for name in deteriorate:
+            det[name.text] += 1
+        print(f"filename: {filename} \ndet: {det}")
 
-# 排除無劣化的 xml 檔,依據劣化輸出 xml
-    if not det:
-        continue # 跳過沒有框選劣化的空 xml
-    for key in det.keys():
-    # deteriorate_folder_path,用在輸出各劣化類別資料夾路徑
-        # deteriorate_folder_path = os.path.join(folder_path ,key) 
-        deteriorate_folder_path = os.path.join(".",key)
-        # output_xml_path,用在輸出的 .xml檔完整路徑
-        output_xml_path = os.path.join(deteriorate_folder_path, filename.replace(".jpg",".xml"))
-       
-# 根據字典的keys(),建立資料夾並輸出新.xml檔
+    # 排除無劣化的 xml 檔,依據劣化輸出 xml
+        if not det:
+            continue # 跳過沒有框選劣化的空 xml
+        for key in det.keys():
+        # deteriorate_folder_path,用在輸出各劣化類別資料夾路徑
+            # deteriorate_folder_path = os.path.join(folder_path ,key) 
+            deteriorate_folder_path = os.path.join(folder_path,key)
+            # output_xml_path,用在輸出的 .xml檔完整路徑
+            output_xml_path = os.path.join(deteriorate_folder_path, filename.replace(".jpg",".xml"))
         
-        # 檢查單一劣化資料夾是否已經存在,若不存在就新增資料夾
-        if not os.path.exists(deteriorate_folder_path):
-            os.makedirs(deteriorate_folder_path)
-        # 檢查圖片是否存在,若不存在就複製 .jpg 檔到新資料夾內
-        jpg_path = os.path.join(folder_path, filename.replace(".xml",".jpg"))
-        jpg_copy_path = os.path.join(deteriorate_folder_path,filename.replace(".xml",".jpg"))
-        if not os.path.exists(jpg_copy_path):
-            shutil.copy(jpg_path, jpg_copy_path)
-        # 寫入單一劣化 .xml 檔到單一劣化資料夾
-        write_single_deteriorate_xml(key,output_xml_path)
-
-
+    # 根據字典的keys(),建立資料夾並輸出新.xml檔
+            
+            # 檢查單一劣化資料夾是否已經存在,若不存在就新增資料夾
+            if not os.path.exists(deteriorate_folder_path):
+                os.makedirs(deteriorate_folder_path)
+            # 檢查圖片是否存在,若不存在就複製 .jpg 檔到新資料夾內
+            jpg_path = os.path.join(folder_path, filename.replace(".xml",".jpg"))
+            jpg_copy_path = os.path.join(deteriorate_folder_path,filename.replace(".xml",".jpg"))
+            if not os.path.exists(jpg_copy_path):
+                shutil.copy(jpg_path, jpg_copy_path)
+            # 寫入單一劣化 .xml 檔到單一劣化資料夾
+            write_single_deteriorate_xml(tree, root, key, output_xml_path)
+def main():
+    split_from_folder(folder_path)
+    
+if __name__=="__main__":
+    main()
