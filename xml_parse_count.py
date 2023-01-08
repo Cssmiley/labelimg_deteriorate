@@ -11,9 +11,7 @@ import sys
 import re
 import argparse
 from pathlib import Path
-import logging
-# 儲存 debug 資訊
-logging.basicConfig(level=logging.DEBUG, format=' % (asctime)s - % (levelname)s - % (message)s')
+
 
 count_xml = 0 # 用於計算總xml數(若每張都有輸出xml即是總張數)
 count_det = collections.defaultdict(int) # 用於計算圖片個劣化類別總數
@@ -48,7 +46,6 @@ def count_file_deteriorate(_file_path):
             det["other"] += 1 
         print(det) # 單張的所有劣化及數量
         print(f"det.keys: {det.keys()}, file_path : {_file_path }")
-        logging.debug(f"det.keys: {det.keys()}, file_path : {_file_path }")
         # 計算各圖片劣化類別總數
         for k in det.keys():
             count_det[k] += 1
@@ -69,7 +66,7 @@ def count_folder(_folder):
     return folder_count
 
 # 遞迴資料夾計算
-def count_recursive_folder(_folder):
+def count_recursive_folder(_folder): # 遞迴處理使用Pathlib,而路徑會是 Pathlib.PosixPath 物件 和一般使用str物件表示路徑的處理不同
     global recursive_count
     for _subitem in sorted(Path(_folder).iterdir()):
         
