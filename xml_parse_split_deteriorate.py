@@ -118,10 +118,13 @@ def split_recursive_folder(folder_path): # 遞迴處理使用Pathlib,而路徑�
             print(f"file: {_subitem}")   
             
         # 讀取檔案,只讀取 xml 檔
-            _file_name = _subitem 
-            if not _file_name.name.lower().endswith('.xml'): # 副檔名統一小寫後做判斷 xxx.name.lower() 是因為Pathlib不能直接xxx.lower() 跳出AttributeError: 'PosixPath' object has no attribute 'lower'
+            _file_name = os.path.basename(_subitem) 
+            #print(f"XXXXXXX_subitem: {_file_name}")
+            if not _file_name.lower().endswith('.xml'): 
+            #if not _file_name.name.lower().endswith('.xml'): # 副檔名統一小寫後做判斷 xxx.name.lower() 是因為Pathlib不能直接xxx.lower() 跳出AttributeError: 'PosixPath' object has no attribute 'lower'
                 continue # 跳過 .xml 以外的檔
             file_path = os.path.join(_folder_path, _file_name)
+            #print(f"XXXXXXX_file_path: {file_path}")
             # read .xml file
             xml_path = file_path
             tree = ET.parse(xml_path)
