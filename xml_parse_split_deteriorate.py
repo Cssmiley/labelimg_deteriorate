@@ -46,12 +46,12 @@ def write_single_deteriorate_xml(tree, root, object_tag, out_xml_path):
     # 最後再貼上特定的劣化節點    
     find_object = f"object[name='{object_tag}']"
     for xml_object in root.findall(find_object):
-        logging.debug(f"xml_object: {xml_object}")
+        print(f"xml_object: {xml_object}")
         xml_annotation.append(xml_object)
 # 將組合好的節點寫入 .xml 檔
     _tree._setroot(xml_annotation) # 將上面組合好的最上層節點 <annotation>設成根節點
     _tree.write(out_xml_path, encoding="UTF-8")
-    logging.debug(f"write_single_deteriorate_xml({object_tag})") # log down debug message for log file
+    print(f"write_single_deteriorate_xml({object_tag})") # log down debug message for log file
  
 def split_from_folder(folder_path):
     # 遍歷 folder,讀取 xml file
