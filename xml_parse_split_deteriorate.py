@@ -12,7 +12,11 @@
 - 將劣化類別複製,並寫入到分別的劣化類別 .xml 檔
 - 複製.jpg圖片到劣化類別資料夾
 - 模組化
-
+注意:
+若是指令使用 python xml_parse_split/deteriorate.py -p "D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試\" 
+最後的雙引號會被跳脫路徑名會變成多了雙引號==> D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試" 
+建議不使用雙引號刮住 python xml_parse_split/deteriorate.py -p D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試\
+            或是  python xml_parse_split/deteriorate.py -p D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試 
 使用
 
 安裝套件 : 不需安裝,使用內建lib
@@ -101,15 +105,14 @@ def split_from_folder(folder_path):
             try:
                 if not os.path.exists(jpg_copy_path):
                     shutil.copy(jpg_path, jpg_copy_path)
-            except:
-                raise FileNotFoundError
+            except Exception as err:
+                raise Exception (str(err)) # 找不到相對應的 .jpg 檔
             # 寫入單一劣化 .xml 檔到單一劣化資料夾
             write_single_deteriorate_xml(tree, root, key, output_xml_path)
             
 def split_recursive_folder(folder_path): # 遞迴處理使用Pathlib,而路徑會是 Pathlib.PosixPath 物件 和一般使用str物件表示路徑的處理不同
     _folder_path = folder_path
-    for _subitem in sorted(Path(_folder_path).iterdir()):
-        
+    for _subitem in sorted(Path(_folder_path).iterdir()): # _folder_path 不在是 str 物件
         if _subitem.is_dir():
             print(f"dir: {_subitem}")
             split_recursive_folder(_subitem)
@@ -124,7 +127,6 @@ def split_recursive_folder(folder_path): # 遞迴處理使用Pathlib,而路徑�
             #if not _file_name.name.lower().endswith('.xml'): # 副檔名統一小寫後做判斷 xxx.name.lower() 是因為Pathlib不能直接xxx.lower() 跳出AttributeError: 'PosixPath' object has no attribute 'lower'
                 continue # 跳過 .xml 以外的檔
             file_path = os.path.join(_folder_path, _file_name)
-            #print(f"XXXXXXX_file_path: {file_path}")
             # read .xml file
             xml_path = file_path
             tree = ET.parse(xml_path)
@@ -148,7 +150,7 @@ def split_recursive_folder(folder_path): # 遞迴處理使用Pathlib,而路徑�
             for key in det.keys():
             # deteriorate_folder_path,用在輸出各劣化類別資料夾路徑
                 # deteriorate_folder_path = os.path.join(_folder_path, key) 
-                deteriorate_folder_path = os.path.join(_folder_path, key)
+                deteriorate_folder_path = os.path.join(".", key) # 遞迴處理後統一放同一個資料夾"."處裡
                 # output_xml_path,用在輸出的 .xml檔完整路徑
                 output_xml_path = os.path.join(deteriorate_folder_path, _file_name)
             
@@ -163,13 +165,25 @@ def split_recursive_folder(folder_path): # 遞迴處理使用Pathlib,而路徑�
                 # 處理相對應的 .jpg 檔,若同檔名的.jpg檔不存在則會跳出FileNotFoundError
                 jpg_path = os.path.join(_folder_path, str(_file_name).replace(".xml", ".jpg"))
                 jpg_copy_path = os.path.join(deteriorate_folder_path,  str(_file_name).replace(".xml", ".jpg"))
-                try:
-                    if not os.path.exists(jpg_copy_path):
+                
+                if not os.path.exists(jpg_copy_path):
+                    try:
                         shutil.copy(jpg_path, jpg_copy_path)
-                except:
-                    raise FileNotFoundError
+                    except Exception as err:
+                        raise Exception(str(err))         
+                else:
+                # recusive 需要處理多個資料夾內的檔名可能重複的問題, 目前是加上重複檔案的資料夾名稱
+                    duplicate_suffix = str(_folder_path).split(os.path.sep)[-1] #_folder_path 已被 Path()更改
+                    jpg_duplicate_path = os.path.join(deteriorate_folder_path, duplicate_suffix +"_"+str(_file_name).replace(".xml", ".jpg"))
+                    shutil.copy(jpg_path, jpg_duplicate_path)
+                
                 # 寫入單一劣化 .xml 檔到單一劣化資料夾
-                write_single_deteriorate_xml(tree, root, key, output_xml_path)
+                if not os.path.exists(output_xml_path):
+                    write_single_deteriorate_xml(tree, root, key, output_xml_path)
+                else:
+                # recusive 需要處理多個資料夾內的檔名可能重複的問題, 目前是加上重複檔案的資料夾名稱
+                    output_xml_duplicate_path = os.path.join(deteriorate_folder_path, duplicate_suffix + "_" + str(_file_name))
+                    write_single_deteriorate_xml(tree, root, key, output_xml_duplicate_path)
                 
 def main():
     # debug message in log file
