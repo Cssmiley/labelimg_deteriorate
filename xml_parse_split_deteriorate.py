@@ -12,18 +12,23 @@
 - 將劣化類別複製,並寫入到分別的劣化類別 .xml 檔
 - 複製.jpg圖片到劣化類別資料夾
 - 模組化
-注意:
-若是指令使用 python xml_parse_split/deteriorate.py -p "D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試\" 
-最後的雙引號會被跳脫路徑名會變成多了雙引號==> D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試" 
-建議不使用雙引號刮住 python xml_parse_split/deteriorate.py -p D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試\
-            或是  python xml_parse_split/deteriorate.py -p D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試 
+
 使用
 
 安裝套件 : 不需安裝,使用內建lib
 將這個 .py 檔放到想篩選圖片的資料夾內
 執行 python檔:
-> python3 xml_parse_split_deteriorate.py "要處理的路徑"
+> python3 xml_parse_split_deteriorate.py -p "要處理的資料夾路徑"
+e.g.  python3 xml_parse_split_deteriorate.py -p D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試
+> python3 xml_parse_split_deteriorate.py -r "要遞迴處理的資料夾路徑"
+e.g.  python3 xml_parse_split_deteriorate.py -r D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試
 輸出單一劣化資料到對應的資料夾,複製.jpg 圖片檔並抽取單一劣化 .xml 檔進資料夾
+
+注意:
+若是指令使用 python xml_parse_split/deteriorate.py -p "D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試\" 
+最後的雙引號會被跳脫路徑名會變成多了雙引號==> D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試" 
+建議不使用雙引號刮住 python xml_parse_split/deteriorate.py -p D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試\
+            或是  python xml_parse_split/deteriorate.py -p D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試 
 """
 import xml.etree.ElementTree  as ET
 import logging
