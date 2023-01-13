@@ -1,6 +1,25 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 # 上面兩行是for python2(一定要原封不動放最上面) ,否則遇到中文會跳錯 SyntaxError: Non-ASCII character '\xe4' in file xml_parse_count.py on line 6, but no encoding declared; see http://python.org/dev/peps/pep-0263/ for details
+"""
+計算劣化數量
+    - 選取資料夾路徑(GUI或手動填)-手動填
+    - 遍歷選取資料夾讀取 .xml 檔
+    - 列出該張圖片的所有劣化分類
+    - 計算各項劣化圖片總數量
+    
+
+    ## 使用
+    - 安裝套件 : 不需安裝,使用內建lib
+    - 執行 python檔: 
+    `> python3 xml_parse_count_csv.py -p "要處理的資料夾路徑"`
+    `> python3 xml_parse_count_csv.py -p D:\labelImg提交檔案\測試
+    `> python3 xml_parse_count_csv.py -r "要處理的遞迴資料夾路徑"`
+    `> python3 xml_parse_count_csv.py -r D:\labelImg提交檔案\`
+    - 印出總數及各劣化數量如下範例:
+    `Total xml : 6, defaultdict(<class 'int'>, {'crack_00': 3, 'rusty_water': 1, 'spalling': 4, 'crack_AC': 1, 'crack': 1, 'corrosion': 1})`
+
+"""
 import csv
 import os
 import platform
