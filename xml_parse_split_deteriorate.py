@@ -25,10 +25,10 @@ e.g.  python3 xml_parse_split_deteriorate.py -r D:\labelImg提交檔案\測試xm
 輸出單一劣化資料到對應的資料夾,複製.jpg 圖片檔並抽取單一劣化 .xml 檔進資料夾
 
 注意:
-若是指令使用 python xml_parse_split/deteriorate.py -p "D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試\" 
+若是若是windows下,指令使用 python xml_parse_split_deteriorate.py -p "D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試\" 
 最後的雙引號會被跳脫路徑名會變成多了雙引號==> D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試" 
-建議不使用雙引號刮住 python xml_parse_split/deteriorate.py -p D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試\
-            或是  python xml_parse_split/deteriorate.py -p D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試 
+建議不使用雙引號刮住 python xml_parse_split_deteriorate.py -p D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試\
+            或是  python xml_parse_split_deteriorate.py -p D:\labelImg提交檔案\測試xml_parse_split_deteriorate\檔案重複bug測試 
 """
 import xml.etree.ElementTree  as ET
 import logging
