@@ -1,7 +1,7 @@
 # labelimg_deteriorate
 python xml 的CRUD處理 用在 AI影像標註
 ---
-hackmd (https://hackmd.io/XHBMIww9Rm-Ef8JCNNpfDw)
+
 
 前置參考:
 [python之lxml快速上手_Element（一）](https://www.twblogs.net/a/5b8cbda02b7177188334f4b7)
