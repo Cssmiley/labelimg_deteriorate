@@ -71,7 +71,7 @@ def rgb_to_hex(rgb_color, to_hex = False):
     '''
     r, g, b = rgb_color
     result = (r << 16) + (g << 8) + b
-    rgb_hex_str = "#{:02X}{:02X}{:02X}".format(r, g, b)
+    rgb_hex_str = "#{:02x}{:02x}{:02x}".format(r, g, b)
     return rgb_hex_str if to_hex else result
  
 # 讀取圖像,解決 imread 不能讀中文路徑的問題
